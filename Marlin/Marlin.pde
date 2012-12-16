@@ -38,5 +38,5 @@
 #endif
 
 #if DIGIPOTSS_PIN > -1
-#include <SPI.h>
+//#include <SPI.h>
 #endif
