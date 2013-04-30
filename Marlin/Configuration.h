@@ -75,7 +75,7 @@
 // 52 is 200k thermistor - ATC Semitec 204GT-2 (1k pullup)
 // 55 is 100k thermistor - ATC Semitec 104GT-2 (Used in ParCan) (1k pullup)
 
-#define TEMP_SENSOR_0 1
+#define TEMP_SENSOR_0 5
 #define TEMP_SENSOR_1 0
 #define TEMP_SENSOR_2 0
 #define TEMP_SENSOR_BED 1
@@ -120,10 +120,18 @@
   #define PID_dT ((16.0 * 8.0)/(F_CPU / 64.0 / 256.0)) //sampling period of the temperature routine
 
 // If you are using a preconfigured hotend then you can use one of the value sets by uncommenting it
-// Ultimaker
-    #define  DEFAULT_Kp 22.2
-    #define  DEFAULT_Ki 1.08  
-    #define  DEFAULT_Kd 114  
+
+
+// Autotune 30.4.13 @ 150C, Gregs Wade Reloaded
+#define DEFAULT_Kp 37.03
+#define DEFAULT_Ki 3.65
+#define DEFAULT_Kd 94.05
+
+// PID Autotune via M303 on 23.12.12, Bowdenextruder
+
+    //#define  DEFAULT_Kp 23.3
+    //#define  DEFAULT_Ki 1.89  
+    //#define  DEFAULT_Kd 71.87 
 
 // Makergear
 //    #define  DEFAULT_Kp 7.0
@@ -146,7 +154,7 @@
 // If your configuration is significantly different than this and you don't understand the issues involved, you proabaly 
 // shouldn't use bed PID until someone else verifies your hardware works.
 // If this is enabled, find your own PID constants below.
-//#define PIDTEMPBED
+#define PIDTEMPBED
 //
 //#define BED_LIMIT_SWITCHING
 
@@ -157,17 +165,14 @@
 #define MAX_BED_POWER 255 // limits duty cycle to bed; 255=full current
 
 #ifdef PIDTEMPBED
-//120v 250W silicone heater into 4mm borosilicate (MendelMax 1.5+)
-//from FOPDT model - kp=.39 Tp=405 Tdead=66, Tc set to 79.2, argressive factor of .15 (vs .1, 1, 10)
-    #define  DEFAULT_bedKp 10.00
-    #define  DEFAULT_bedKi .023
-    #define  DEFAULT_bedKd 305.4
 
-//120v 250W silicone heater into 4mm borosilicate (MendelMax 1.5+)
-//from pidautotune
-//    #define  DEFAULT_bedKp 97.1
-//    #define  DEFAULT_bedKi 1.41
-//    #define  DEFAULT_bedKd 1675.16
+// Autotune 23.12.12 @ 115C
+
+    #define  DEFAULT_bedKp 328.09
+    #define  DEFAULT_bedKi 33.37
+    #define  DEFAULT_bedKd 806.32
+    
+
 
 // FIND YOUR OWN: "M303 E-1 C8 S90" to run autotune on the bed at 90 degreesC for 8 cycles.
 #endif // PIDTEMPBED
@@ -248,9 +253,9 @@ const bool Z_ENDSTOPS_INVERTING = false; // set to true to invert the logic of t
 // Travel limits after homing - M114 to print current position
 #define X_MAX_POS 160
 #define X_MIN_POS 0
-#define Y_MAX_POS 135
+#define Y_MAX_POS 160
 #define Y_MIN_POS 0
-#define Z_MAX_POS 120
+#define Z_MAX_POS 160
 #define Z_MIN_POS 0
 
 #define X_MAX_LENGTH (X_MAX_POS - X_MIN_POS)
@@ -268,16 +273,20 @@ const bool Z_ENDSTOPS_INVERTING = false; // set to true to invert the logic of t
 
 //// MOVEMENT SETTINGS
 #define NUM_AXIS 4 // The axis order in all axis related arrays is X, Y, Z, E
-#define HOMING_FEEDRATE {50*60, 50*60, 30, 0}  // set the homing speeds (mm/min)
+#define HOMING_FEEDRATE {50*60, 50*60, 60, 0}  // set the homing speeds (mm/min)
 
 // default settings 
 
-#define DEFAULT_AXIS_STEPS_PER_UNIT   {80,80,2560, 108}   // See http://reprap.org/wiki/Triffid_Hunter's_Calibration_Guide
-#define DEFAULT_MAX_FEEDRATE          {500, 500, 5, 100}    // (mm/sec)    
-#define DEFAULT_MAX_ACCELERATION      {9000,9000,100,10000}    // X, Y, Z, E maximum start speed for accelerated moves. E default values are good for skeinforge 40+, for older versions raise them a lot.
 
-#define DEFAULT_ACCELERATION          3000    // X, Y, Z and E max acceleration in mm/s^2 for printing moves 
-#define DEFAULT_RETRACT_ACCELERATION  3000   // X, Y, Z and E max acceleration in mm/s^2 for r retracts
+// MD: Values for Bowden hotend
+//#define DEFAULT_AXIS_STEPS_PER_UNIT   {80,80,2560, 120}
+// Values for Greg's Wade Reloaded, 200*16*47/9/3.141596/7
+#define DEFAULT_AXIS_STEPS_PER_UNIT   {80,80,2560,710}   // See http://reprap.org/wiki/Triffid_Hunter's_Calibration_Guide
+#define DEFAULT_MAX_FEEDRATE          {500, 500, 3, 100}    // (mm/sec)    
+#define DEFAULT_MAX_ACCELERATION      {3000,3000,100,10000}    // X, Y, Z, E maximum start speed for accelerated moves. E default values are good for skeinforge 40+, for older versions raise them a lot.
+
+#define DEFAULT_ACCELERATION          2000    // X, Y, Z and E max acceleration in mm/s^2 for printing moves 
+#define DEFAULT_RETRACT_ACCELERATION  2000   // X, Y, Z and E max acceleration in mm/s^2 for r retracts
 
 // 
 #define DEFAULT_XYJERK                20.0    // (mm/sec)
@@ -294,17 +303,20 @@ const bool Z_ENDSTOPS_INVERTING = false; // set to true to invert the logic of t
 // M501 - reads parameters from EEPROM (if you need reset them after you changed them temporarily).  
 // M502 - reverts to the default "factory settings".  You still need to store them in EEPROM afterwards if you want to.
 //define this to enable eeprom support
-#define EEPROM_SETTINGS
+
+// MD: Enabling EEPROM leads to weirdness - I prefer having all values defined here and uploaded manually.
+
+//#define EEPROM_SETTINGS
 //to disable EEPROM Serial responses and decrease program space by ~1700 byte: comment this out:
 // please keep turned on if you can.
-//#define EEPROM_CHITCHAT
+#define EEPROM_CHITCHAT
 
 //LCD and SD support
 //#define ULTRA_LCD  //general lcd support, also 16x2
-#define SDSUPPORT // Enable SD Card Support in Hardware Console
+//#define SDSUPPORT // Enable SD Card Support in Hardware Console
 
 //#define ULTIMAKERCONTROLLER //as available from the ultimaker online store.
-//#define ULTIPANEL  //the ultipanel as on thingiverse
+#define ULTIPANEL  //the ultipanel as on thingiverse
 
 // The RepRapDiscount Smart Controller
 // http://reprap.org/wiki/RepRapDiscount_Smart_Controller
@@ -328,7 +340,7 @@ const bool Z_ENDSTOPS_INVERTING = false; // set to true to invert the logic of t
 
 
 #ifdef ULTIPANEL
-//  #define NEWPANEL  //enable this if you have a click-encoder panel
+  #define NEWPANEL  //enable this if you have a click-encoder panel
   #define SDSUPPORT
   #define ULTRA_LCD
   #define LCD_WIDTH 20

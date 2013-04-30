@@ -25,7 +25,7 @@
 #define LCD_STR_CLOCK       "\x07"
 #define LCD_STR_ARROW_RIGHT "\x7E"  /* from the default character set */
 
-LiquidCrystal lcd(LCD_PINS_RS, LCD_PINS_ENABLE, LCD_PINS_D4, LCD_PINS_D5,LCD_PINS_D6,LCD_PINS_D7);  //RS,Enable,D4,D5,D6,D7
+LCD_CLASS lcd(LCD_PINS_RS, LCD_PINS_ENABLE, LCD_PINS_D4, LCD_PINS_D5,LCD_PINS_D6,LCD_PINS_D7);  //RS,Enable,D4,D5,D6,D7
 static void lcd_implementation_init()
 {
     byte bedTemp[8] =
@@ -126,6 +126,15 @@ static void lcd_implementation_clear()
 {
     lcd.clear();
 }
+/* Arduino < 1.0.0 is missing a function to print PROGMEM strings, so we need to implement our own */
+static void lcd_printPGM(const char* str)
+{
+    char c;
+    while((c = pgm_read_byte(str++)) != '\0')
+    {
+        lcd.write(c);
+    }
+}
 /*
 Possible status screens:
 16x2   |0123456789012345|
@@ -188,7 +197,9 @@ static void lcd_implementation_status_screen()
     lcd.print(itostr3(tHotend));
     lcd.print('/');
     lcd.print(itostr3left(tTarget));
-    lcd.print(F(LCD_STR_DEGREE " "));
+    lcd_printPGM(PSTR(LCD_STR_DEGREE " "));
+    if (tTarget < 10)
+        lcd.print(' ');
 
 # if EXTRUDERS > 1 || TEMP_SENSOR_BED != 0
     //If we have an 2nd extruder or heated bed, show that in the top right corner
@@ -205,7 +216,9 @@ static void lcd_implementation_status_screen()
     lcd.print(itostr3(tHotend));
     lcd.print('/');
     lcd.print(itostr3left(tTarget));
-    lcd.print(F(LCD_STR_DEGREE " "));
+    lcd_printPGM(PSTR(LCD_STR_DEGREE " "));
+    if (tTarget < 10)
+        lcd.print(' ');
 # endif//EXTRUDERS > 1 || TEMP_SENSOR_BED != 0
 #endif//LCD_WIDTH > 19
 
@@ -214,11 +227,11 @@ static void lcd_implementation_status_screen()
 # if LCD_WIDTH < 20
 #  ifdef SDSUPPORT
     lcd.setCursor(0, 2);
-    lcd.print(F("SD"));
+    lcd_printPGM(PSTR("SD"));
     if (IS_SD_PRINTING)
         lcd.print(itostr3(card.percentDone()));
     else
-        lcd.print(F("---"));
+        lcd_printPGM(PSTR("---"));
     lcd.print('%');
 #  endif//SDSUPPORT
 # else//LCD_WIDTH > 19
@@ -232,12 +245,14 @@ static void lcd_implementation_status_screen()
     lcd.print(itostr3(tHotend));
     lcd.print('/');
     lcd.print(itostr3left(tTarget));
-    lcd.print(F(LCD_STR_DEGREE " "));
+    lcd_printPGM(PSTR(LCD_STR_DEGREE " "));
+    if (tTarget < 10)
+        lcd.print(' ');
 #  else
     lcd.setCursor(0,1);
     lcd.print('X');
     lcd.print(ftostr3(current_position[X_AXIS]));
-    lcd.print(F(" Y"));
+    lcd_printPGM(PSTR(" Y"));
     lcd.print(ftostr3(current_position[Y_AXIS]));
 #  endif//EXTRUDERS > 1 || TEMP_SENSOR_BED != 0
 # endif//LCD_WIDTH > 19
@@ -250,16 +265,16 @@ static void lcd_implementation_status_screen()
     lcd.setCursor(0, 2);
     lcd.print(LCD_STR_FEEDRATE[0]);
     lcd.print(itostr3(feedmultiply));
-    lcd.print(F("%"));
+    lcd.print('%');
 # if LCD_WIDTH > 19
 #  ifdef SDSUPPORT
     lcd.setCursor(7, 2);
-    lcd.print(F("SD"));
+    lcd_printPGM(PSTR("SD"));
     if (IS_SD_PRINTING)
         lcd.print(itostr3(card.percentDone()));
     else
-        lcd.print(F("---"));
-    lcd.print(F("%"));
+        lcd_printPGM(PSTR("---"));
+    lcd.print('%');
 #  endif//SDSUPPORT
 # endif//LCD_WIDTH > 19
     lcd.setCursor(LCD_WIDTH - 6, 2);
@@ -268,10 +283,10 @@ static void lcd_implementation_status_screen()
     {
         uint16_t time = millis()/60000 - starttime/60000;
         lcd.print(itostr2(time/60));
-        lcd.print(F(":"));
+        lcd.print(':');
         lcd.print(itostr2(time%60));
     }else{
-        lcd.print(F("--:--"));
+        lcd_printPGM(PSTR("--:--"));
     }
 #endif
 
@@ -328,7 +343,7 @@ static void lcd_implementation_drawmenu_setting_edit_generic_P(uint8_t row, cons
     lcd.print(':');
     while(n--)
         lcd.print(' ');
-    lcd.print(reinterpret_cast<const __FlashStringHelper *>(data));
+    lcd_printPGM(data);
 }
 #define lcd_implementation_drawmenu_setting_edit_int3_selected(row, pstr, pstr2, data, minValue, maxValue) lcd_implementation_drawmenu_setting_edit_generic(row, pstr, '>', itostr3(*(data)))
 #define lcd_implementation_drawmenu_setting_edit_int3(row, pstr, pstr2, data, minValue, maxValue) lcd_implementation_drawmenu_setting_edit_generic(row, pstr, ' ', itostr3(*(data)))
@@ -348,8 +363,8 @@ static void lcd_implementation_drawmenu_setting_edit_generic_P(uint8_t row, cons
 #define lcd_implementation_drawmenu_setting_edit_bool(row, pstr, pstr2, data) lcd_implementation_drawmenu_setting_edit_generic_P(row, pstr, ' ', (*(data))?PSTR(MSG_ON):PSTR(MSG_OFF))
 void lcd_implementation_drawedit(const char* pstr, char* value)
 {
-    lcd.setCursor(0, 1);
-    lcd.print(reinterpret_cast<const __FlashStringHelper *>(pstr));
+    lcd.setCursor(1, 1);
+    lcd_printPGM(pstr);
     lcd.print(':');
     lcd.setCursor(19 - strlen(value), 1);
     lcd.print(value);
