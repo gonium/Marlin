@@ -121,11 +121,15 @@
 
 // If you are using a preconfigured hotend then you can use one of the value sets by uncommenting it
 
+// Autotune 18.10.13, Gregs Wade Reloaded mit nachgebautem J-Head MK5, Heizpatrone
+#define DEFAULT_Kp 25.34
+#define DEFAULT_Ki 2.22
+#define DEFAULT_Kd 72.24
 
-// Autotune 30.4.13 @ 150C, Gregs Wade Reloaded
-#define DEFAULT_Kp 37.03
-#define DEFAULT_Ki 3.65
-#define DEFAULT_Kd 94.05
+// Autotune 30.4.13 @ 150C, Gregs Wade Reloaded mit original J-Head MK5
+//#define DEFAULT_Kp 37.03
+//#define DEFAULT_Ki 3.65
+//#define DEFAULT_Kd 94.05
 
 // PID Autotune via M303 on 23.12.12, Bowdenextruder
 
@@ -281,7 +285,7 @@ const bool Z_ENDSTOPS_INVERTING = false; // set to true to invert the logic of t
 // MD: Values for Bowden hotend
 //#define DEFAULT_AXIS_STEPS_PER_UNIT   {80,80,2560, 120}
 // Values for Greg's Wade Reloaded, 200*16*47/9/3.141596/7
-#define DEFAULT_AXIS_STEPS_PER_UNIT   {80,80,2560,710}   // See http://reprap.org/wiki/Triffid_Hunter's_Calibration_Guide
+#define DEFAULT_AXIS_STEPS_PER_UNIT   {80,80,2560,660}   // See http://reprap.org/wiki/Triffid_Hunter's_Calibration_Guide
 #define DEFAULT_MAX_FEEDRATE          {500, 500, 3, 100}    // (mm/sec)    
 #define DEFAULT_MAX_ACCELERATION      {3000,3000,100,10000}    // X, Y, Z, E maximum start speed for accelerated moves. E default values are good for skeinforge 40+, for older versions raise them a lot.
 
